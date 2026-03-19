@@ -1,0 +1,73 @@
+"use client";
+
+import { Card, CardContent } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Calendar } from "lucide-react";
+import { Task } from "@/types/task";
+import { TaskDetail } from "./task-detail";
+
+interface Props {
+    task: Task;
+}
+
+export function TaskCard({ task }: Props) {
+    return (
+        <Dialog>
+            <DialogTrigger asChild>
+                <Card className="mb-3 hover:shadow-md transition cursor-pointer">
+                    <CardContent className="p-4 space-y-3">
+                        {/* Code */}
+                        <p className="text-xs text-muted-foreground">{task.code}</p>
+
+                        {/* Title */}
+                        <h4 className="font-medium leading-tight">{task.title}</h4>
+
+                        {/* Footer */}
+                        <div className="flex items-center justify-between pt-2">
+                            <div className="flex items-center gap-2">
+                                {task.priority && (
+                                    <Badge
+                                        variant={
+                                            task.priority === "high"
+                                                ? "destructive"
+                                                : task.priority === "medium"
+                                                    ? "default"
+                                                    : "secondary"
+                                        }
+                                    >
+                                        {task.priority}
+                                    </Badge>
+                                )}
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                {task.dueDate && (
+                                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                        <Calendar size={14} />
+                                        {task.dueDate}
+                                    </div>
+                                )}
+
+                        {task.assignees && task.assignees.length > 0 && (
+                            <Avatar className="h-6 w-6">
+                                <AvatarFallback>
+                                    {task.assignees[0].charAt(0)}
+                                </AvatarFallback>
+                            </Avatar>
+                        )}
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-3xl">
+                <DialogHeader>
+                    <DialogTitle>Task detail</DialogTitle>
+                </DialogHeader>
+                <TaskDetail task={task} />
+            </DialogContent>
+        </Dialog>
+    );
+}

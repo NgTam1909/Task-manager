@@ -1,0 +1,36 @@
+"use client";
+
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
+import { Task, TaskStatus } from "@/types/task";
+import { TaskCard } from "./task-card";
+
+interface Props {
+    title: string;
+    status: TaskStatus;
+    tasks: Task[];
+}
+
+export function KanbanColumn({ title, status, tasks }: Props) {
+    return (
+        <div className="flex flex-col bg-muted/40 rounded-xl p-4 w-[320px] shrink-0">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold text-sm">
+                    {title}{" "}
+                    <span className="text-muted-foreground ml-1">
+            {tasks.length}
+          </span>
+                </h3>
+            </div>
+
+            {/* Tasks */}
+            <ScrollArea className="h-[600px] pr-2">
+                {tasks.map((task) => (
+                    <TaskCard key={task.id} task={task} />
+                ))}
+            </ScrollArea>
+        </div>
+    );
+}
