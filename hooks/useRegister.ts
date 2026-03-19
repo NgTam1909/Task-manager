@@ -25,7 +25,7 @@ export function useRegister() {
 
     const handleSubmit = async () => {
         if (form.password !== form.confirmPassword) {
-            setError("Passwords do not match")
+            setError("Mật khẩu không trùng khớp")
             return
         }
 
@@ -42,8 +42,9 @@ export function useRegister() {
             })
 
             window.location.href = "/login"
-        } catch (err: any) {
-            setError(err.message)
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : "Đăng ký thất bại"
+            setError(message)
         } finally {
             setLoading(false)
         }

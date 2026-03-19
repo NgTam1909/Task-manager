@@ -1,49 +1,68 @@
-'use client'
+﻿import { cookies } from "next/headers"
+import { jwtVerify } from "jose"
 
-import { useEffect, useState } from 'react'
+import { connectDB } from "@/lib/db"
+import User from "@/models/user.model"
 
-export default function DashboardPage() {
-    const [greeting, setGreeting] = useState('')
-    const [today, setToday] = useState('')
-    const [time, setTime] = useState('')
+const SECRET = new TextEncoder().encode(process.env.JWT_SECRET!)
 
+async function getCurrentUsername() {
+    const token = (await cookies()).get("accessToken")?.value
 
-    useEffect(() => {
+    if (!token) return null
 
-        const now = new Date()
-        const hour = now.getHours()
-        const minute = now.getMinutes()
+    try {
+        const { payload } = await jwtVerify(token, SECRET)
+        const userId =
+            (payload as { id?: string; userId?: string }).id ??
+            (payload as { id?: string; userId?: string }).userId
 
-        const greet =
-           hour < 4
-               ? 'Bạn không ngủ sao?'
-               :hour < 12
-                   ? 'Chào buổi sáng'
-                   : hour < 18
-                       ? 'Chào buổi chiều'
-                       : hour < 23
-                           ?'Chào buổi tối'
-                           :'Muộn rồi hãy nghỉ ngơi đi!'
+        if (!userId) return null
 
-        setGreeting(greet)
+        await connectDB()
 
-        setToday(
-            now.toLocaleDateString('vi-VN', {
-                weekday: 'long',
-                day: 'numeric',
-                month: 'numeric',
-                year: 'numeric',
-            })
-        )
-        setTime(
-            now.toLocaleTimeString('vi-VN', {
-                hour: '2-digit',
-                minute: '2-digit'
-            })
+        const user = await User.findById(userId).select(
+            "firstName lastName email"
         )
 
+        if (!user) return null
 
-    }, [])
+        const fullName = [user.lastName, user.firstName]
+            .filter(Boolean)
+            .join(" ")
+            .trim()
+
+        return fullName || user.email
+    } catch {
+        return null
+    }
+}
+
+export default async function DashboardPage() {
+    const now = new Date()
+    const hour = now.getHours()
+    const username = (await getCurrentUsername()) ?? "bạn"
+    const greeting =
+        hour < 4
+            ? 'Giờ này sao bạn lại ở đây? '
+            : hour < 12
+                ? 'Chào buổi sáng'
+                : hour < 18
+                    ? 'Chào buổi chiều'
+                    : hour < 23
+                        ? 'Chào buổi tối'
+                        : 'Muộn rồi đó!'
+
+    const today = now.toLocaleDateString('vi-VN', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'numeric',
+        year: 'numeric',
+    })
+    const time = now.toLocaleTimeString('vi-VN', {
+        hour: '2-digit',
+        minute: '2-digit'
+    })
 
     const tasks = [
         {
@@ -82,7 +101,7 @@ export default function DashboardPage() {
             {/* Header */}
             <div className="space-y-1 text-center">
                 <h1 className="text-2xl sm:text-3xl font-bold">
-                    {greeting}, Tâm 👋
+                    {greeting}, {username}
                 </h1>
 
                 <p className="text-sm text-muted-foreground">
@@ -94,7 +113,7 @@ export default function DashboardPage() {
             <div>
 
                 <h2 className="text-lg sm:text-xl font-semibold mb-6">
-                    Danh sách công việc của bạn
+                    Tổng quan dự án
                 </h2>
 
                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -135,7 +154,7 @@ export default function DashboardPage() {
                             </div>
 
                             <div className="text-sm">
-                                👤 {task.assignee}
+                                Phụ trách: {task.assignee}
                             </div>
 
                         </div>
@@ -150,3 +169,6 @@ export default function DashboardPage() {
 
     )
 }
+
+
+

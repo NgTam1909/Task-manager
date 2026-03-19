@@ -1,0 +1,112 @@
+'use client';
+
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Lock, Eye, EyeOff, Loader2, CheckCircle2, Save } from 'lucide-react';
+import { POST_METHOD } from '@/lib/req';
+
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
+
+export function ResetPasswordForm() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const token = searchParams.get('token');
+
+  const [loading, setLoading] = useState(false);
+  const [showPass, setShowPass] = useState(false);
+  const [formData, setFormData] = useState({ password: '', confirmPassword: '' });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (formData.password !== formData.confirmPassword) {
+      toast.error("Máº­t kháº©u xÃ¡c nháº­n khÃ´ng khá»›p!");
+      return;
+    }
+
+    if (!token) {
+      toast.error("LiÃªn káº¿t Ä‘áº·t láº¡i máº­t kháº©u khÃ´ng há»£p lá»‡.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await POST_METHOD('/api/reset-password', { ...formData, token });
+
+      toast.success("Äá»•i máº­t kháº©u thÃ nh cÃ´ng! HÃ£y Ä‘Äƒng nháº­p láº¡i.");
+      setTimeout(() => router.push('/login'), 1500);
+    } catch (err) {
+      const payload = (err as { response?: { data?: { message?: string } } })?.response?.data;
+      toast.error(payload?.message ?? "Token háº¿t háº¡n hoáº·c lá»—i há»‡ thá»‘ng.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Card className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl overflow-hidden rounded-xl">
+      <CardHeader className="text-center pb-6 border-b border-slate-100 dark:border-slate-800/50 pt-6">
+        <div className="text-xl font-bold text-slate-900 dark:text-white">
+          Äáº·t láº¡i máº­t kháº©u
+        </div>
+        <div className="text-sm text-slate-500 dark:text-slate-400 mt-2">
+          Vui lÃ²ng nháº­p máº­t kháº©u má»›i cho tÃ i khoáº£n cá»§a báº¡n.
+        </div>
+      </CardHeader>
+
+      <CardContent className="pt-8 px-6 pb-8">
+        <form onSubmit={handleSubmit} className="space-y-5">
+
+          <div className="space-y-2">
+            <Label htmlFor="password" className="text-slate-700 dark:text-slate-300 font-semibold">Máº­t kháº©u má»›i</Label>
+            <div className="relative group">
+              <Lock className="absolute left-3.5 top-3.5 h-5 w-5 text-slate-400 group-focus-within:text-orange-500 transition-colors" />
+              <Input
+                id="password"
+                type={showPass ? "text" : "password"}
+                placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                className={cn("pl-11 pr-11 h-12 rounded-lg border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 focus:border-orange-500 focus:ring-orange-500/20")}
+                value={formData.password}
+                onChange={e => setFormData({ ...formData, password: e.target.value })}
+                required minLength={6}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="confirmPassword" className="text-slate-700 dark:text-slate-300 font-semibold">XÃ¡c nháº­n máº­t kháº©u</Label>
+            <div className="relative group">
+              <CheckCircle2 className="absolute left-3.5 top-3.5 h-5 w-5 text-slate-400 group-focus-within:text-orange-500 transition-colors" />
+              <Input
+                id="confirmPassword"
+                type={showPass ? "text" : "password"}
+                placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                className={cn("pl-11 pr-11 h-12 rounded-lg border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 focus:border-orange-500 focus:ring-orange-500/20")}
+                value={formData.confirmPassword}
+                onChange={e => setFormData({ ...formData, confirmPassword: e.target.value })}
+                required
+              />
+              <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-3.5 top-3.5 text-slate-400 hover:text-orange-600 transition-colors">
+                {showPass ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              </button>
+            </div>
+          </div>
+
+          <Button
+            type="submit"
+            className="w-full h-12 mt-2 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold text-base rounded-lg shadow-md shadow-orange-500/20"
+            disabled={loading}
+          >
+            {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <span className="flex items-center gap-2">LÆ°u máº­t kháº©u má»›i <Save className="h-4 w-4" /></span>}
+          </Button>
+
+        </form>
+      </CardContent>
+    </Card>
+  );
+}

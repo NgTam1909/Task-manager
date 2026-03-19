@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { parsePhoneNumberFromString } from "libphonenumber-js"
 
 export const registerSchema = z.object({
     firstName: z
@@ -15,11 +16,14 @@ export const registerSchema = z.object({
         .string()
         .email("Địa chỉ email không hợp lệ")
         .toLowerCase(),
-
     phone: z
         .string()
-        .min(10, "Số điện thoại quá ngắn")
-        .max(11),
+        .trim()
+        .refine((value) => {
+            const phone = parsePhoneNumberFromString(value, "VN")
+            const type = phone?.getType()
+            return !!phone?.isValid() && (type === "MOBILE")
+        }, "Số điện thoại không hợp lệ"),
 
     password: z
         .string()
@@ -32,3 +36,6 @@ export const registerSchema = z.object({
         message: "Mật khẩu không trùng khớp",
         path: ["confirmPassword"],
     })
+
+
+

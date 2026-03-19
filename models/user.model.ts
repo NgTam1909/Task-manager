@@ -11,6 +11,8 @@ export interface IUser extends Document {
     address?: mongoose.Types.ObjectId[];
 
     isGod: boolean;
+    resetPasswordToken?: string;
+    resetPasswordExpires?: Date;
 
     createdAt: Date;
     updatedAt: Date;
@@ -63,6 +65,14 @@ const UserSchema = new Schema<IUser>(
         isGod: {
             type: Boolean,
             default: false,
+        },
+        resetPasswordToken: {
+            type: String,
+            select: false,
+        },
+        resetPasswordExpires: {
+            type: Date,
+            select: false,
         },
     },
     {

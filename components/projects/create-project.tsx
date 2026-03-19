@@ -23,6 +23,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
+import { POST_METHOD } from "@/lib/req"
 
 type CreateProjectProps = {
     onSuccessAction?: () => void
@@ -45,26 +46,13 @@ export default function CreateProject({ onSuccessAction }: CreateProjectProps) {
         setError(null)
 
         try {
-            const res = await fetch("/api/projects", {
-                method: "POST",
-                credentials: "include",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(data),
-            })
-
-            if (!res.ok) {
-                const payload = await res.json().catch(() => null)
-                setError(payload?.message ?? "Tạo dự án thất bại")
-                return
-            }
-
+            await POST_METHOD("/api/projects", data)
             form.reset()
             router.refresh()
             onSuccessAction?.()
-        } catch {
-            setError("Tạo dự án thất bại")
+        } catch (err: unknown) {
+            const payload = (err as { response?: { data?: { message?: string } } })?.response?.data
+            setError(payload?.message ?? "Táº¡o dá»± Ã¡n tháº¥t báº¡i")
         }
     }
 
@@ -149,7 +137,7 @@ export default function CreateProject({ onSuccessAction }: CreateProjectProps) {
                         className="w-full"
                         disabled={form.formState.isSubmitting}
                     >
-                        {form.formState.isSubmitting ? "Đang tạo..." : "Create project"}
+                        {form.formState.isSubmitting ? "Äang táº¡o..." : "Create project"}
                     </Button>
                 </form>
             </Form>
