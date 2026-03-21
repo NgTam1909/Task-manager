@@ -1,28 +1,29 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useSyncExternalStore } from "react"
 
 const MOBILE_BREAKPOINT = 768
 
 export function useIsMobile(): boolean {
+    return useSyncExternalStore(
+        (onStoreChange) => {
+            if (typeof window === "undefined") {
+                return () => {}
+            }
 
-    const [isMobile, setIsMobile] = useState<boolean | undefined>(undefined)
+            const mediaQuery = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
+            const handler = () => onStoreChange()
 
-    useEffect(() => {
+            mediaQuery.addEventListener("change", handler)
 
-        const mediaQuery = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
-
-        const onChange = () => {
-            setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-        }
-
-        mediaQuery.addEventListener("change", onChange)
-
-        setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-
-        return () => mediaQuery.removeEventListener("change", onChange)
-
-    }, [])
-
-    return !!isMobile
+            return () => mediaQuery.removeEventListener("change", handler)
+        },
+        () => {
+            if (typeof window === "undefined") {
+                return false
+            }
+            return window.innerWidth < MOBILE_BREAKPOINT
+        },
+        () => false
+    )
 }

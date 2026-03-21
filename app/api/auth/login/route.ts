@@ -10,13 +10,13 @@ export async function POST(req: Request) {
     const user = await User.findOne({ email }).select("+password")
 
     if (!user) {
-        return NextResponse.json({ message: "Invalid credentials" }, { status: 401 })
+        return NextResponse.json({ message: "Thông tin không chính xác" }, { status: 401 })
     }
 
     const isMatch = await user.comparePassword(password)
 
     if (!isMatch) {
-        return NextResponse.json({ message: "Invalid credentials" }, { status: 401 })
+        return NextResponse.json({ message: "Mật khẩu không chính xác" }, { status: 401 })
     }
 
     const token = signToken({

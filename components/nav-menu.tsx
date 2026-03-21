@@ -1,7 +1,7 @@
 'use client';
 
 import { Search, Bell, HelpCircle, User, Menu } from 'lucide-react';
-import { useEffect, useState } from "react";
+import { useHydrated } from "@/hooks/use-hydrated";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
@@ -24,11 +24,7 @@ export default function NavMenu({
     onToggleSidebarAction,
     className,
 }: NavMenuProps) {
-    const [mounted, setMounted] = useState(false)
-
-    useEffect(() => {
-        setMounted(true)
-    }, [])
+    const mounted = useHydrated()
 
     const handleLogout = async () => {
         await POST_METHOD("/api/auth/logout", {})

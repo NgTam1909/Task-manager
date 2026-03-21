@@ -5,31 +5,7 @@ import { useParams } from "next/navigation"
 import { KanbanColumn } from "@/components/tasks/task-list"
 import { Task, TaskStatus } from "@/types/task"
 import { GET_METHOD } from "@/lib/req"
-
-type ProjectInfo = {
-    title: string
-    projectId: string
-}
-
-type ApiTask = {
-    _id: string
-    title: string
-    status: TaskStatus
-    description?: string | null
-    importance?: "none" | "low" | "medium" | "high"
-    dueDate?: string | null
-    startDate?: string | null
-    estimate?: number | null
-    assignees?: Array<{ name?: string; email?: string }> | string[]
-    labels?: string[]
-    createdAt?: string
-    updatedAt?: string
-}
-
-type ApiResponse = {
-    project: ProjectInfo
-    tasks: ApiTask[]
-}
+import { ApiTask, ApiResponse, ProjectInfo } from "@/types/project";
 
 const statusColumns: Array<{ title: string; status: TaskStatus }> = [
     { title: "Backlog", status: TaskStatus.BACKLOG },

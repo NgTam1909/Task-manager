@@ -35,6 +35,8 @@ import CreateTaskForm from "@/components/tasks/create-task";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { DELETE_METHOD, GET_METHOD } from "@/lib/req";
+import { MemberDialog } from "@/components/projects/member-project";
+import { useHydrated } from "@/hooks/use-hydrated";
 
 type Project = {
     _id: string;
@@ -62,11 +64,7 @@ export default function NavProjects() {
     const [members, setMembers] = useState<ProjectMember[]>([]);
     const [membersLoading, setMembersLoading] = useState(false);
     const [deletingId, setDeletingId] = useState<string | null>(null);
-    const [mounted, setMounted] = useState(false);
-
-    useEffect(() => {
-        setMounted(true);
-    }, []);
+    const mounted = useHydrated();
 
     useEffect(() => {
         let active = true;
@@ -317,50 +315,19 @@ export default function NavProjects() {
                     )}
                 </DialogContent>
             </Dialog>
+            
+                <MemberDialog
+                    open={!!memberDialogProjectId}
+                    onOpenChange={(open) => {
+                        if (!open) {
+                            setMemberDialogProjectId(null);
+                            setMemberDialogProjectTitle(null);
+                        }
+                    }}
+                    projectId={memberDialogProjectId}
+                    projectTitle={memberDialogProjectTitle}
+                />
 
-            <Dialog
-                open={!!memberDialogProjectId}
-                onOpenChange={(nextOpen) => {
-                    if (!nextOpen) {
-                        setMemberDialogProjectId(null);
-                        setMemberDialogProjectTitle(null);
-                        setMembers([]);
-                    }
-                }}
-            >
-                <DialogContent className="sm:max-w-lg">
-                    <DialogHeader>
-                        <DialogTitle>
-                            {memberDialogProjectTitle
-                                ? `ThÃ nh viÃªn - ${memberDialogProjectTitle}`
-                                : "ThÃ nh viÃªn dá»± Ã¡n"}
-                        </DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-3">
-                        {membersLoading && (
-                            <p className="text-sm text-muted-foreground">Äang táº£i...</p>
-                        )}
-                        {!membersLoading && members.length === 0 && (
-                            <p className="text-sm text-muted-foreground">ChÆ°a cÃ³ thÃ nh viÃªn.</p>
-                        )}
-                        {!membersLoading &&
-                            members.map((member) => (
-                                <div
-                                    key={member.id}
-                                    className="flex items-center justify-between rounded-lg border p-3"
-                                >
-                                    <div>
-                                        <div className="text-sm font-medium">{member.name || member.email}</div>
-                                        <div className="text-xs text-muted-foreground">{member.email}</div>
-                                    </div>
-                                    <span className="text-xs rounded-full border px-2 py-1 text-muted-foreground">
-                                        {member.isOwner ? "Owner" : member.role}
-                                    </span>
-                                </div>
-                            ))}
-                    </div>
-                </DialogContent>
-            </Dialog>
         </SidebarContent>
     );
 }
